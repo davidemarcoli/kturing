@@ -3,8 +3,9 @@ package universaltm
 import turingmachine.TMResult
 import turingmachine.TuringMachineRunner
 
+
 /**
- * Universal Turing Machine that can run any encoded TM.
+ * Main class for Universal Turing Machine with fluent API.
  */
 class UniversalTuringMachine {
     private val decoder = TuringMachineDecoder()
@@ -12,46 +13,51 @@ class UniversalTuringMachine {
 
     /**
      * Runs a TM specified by its binary encoding on the given input.
-     *
-     * @param tmEncoding Binary encoding of the TM
-     * @param input Input string for the TM
-     * @param observer Optional observer for step-by-step execution
-     * @return The result of the computation
+     * Returns a builder that lets you attach step observers.
      */
-    fun run(tmEncoding: String, input: String, observer: TuringMachineRunner.StepObserver? = null): TMResult {
+    fun prepare(tmEncoding: String, input: String): TMExecutor {
         val turingMachine = decoder.decode(tmEncoding)
         val runner = TuringMachineRunner(turingMachine)
-
-        // Set observer if provided
-        runner.setObserver(observer)
-
-        // Initialize and run
         runner.initialize(input)
-        return runner.run()
+
+        return TMExecutor(runner)
     }
 
     /**
      * Runs a TM specified by its Gödel number on the given input.
-     *
-     * @param godelNumber Decimal Gödel number of the TM
-     * @param input Input string for the TM
-     * @param observer Optional observer for step-by-step execution
-     * @return The result of the computation
+     * Returns a builder that lets you attach step observers.
      */
-    fun runWithGodelNumber(godelNumber: Long, input: String, observer: TuringMachineRunner.StepObserver? = null): TMResult {
+    fun prepareWithGodelNumber(godelNumber: Long, input: String): TMExecutor {
         val binaryEncoding = parser.decimalToBinary(godelNumber)
-        return run(binaryEncoding, input, observer)
+        return prepare(binaryEncoding, input)
     }
 
     /**
      * Runs a TM specified by a combined input string (encoding + input).
-     *
-     * @param combinedInput String in format "tmEncoding111inputString"
-     * @param observer Optional observer for step-by-step execution
-     * @return The result of the computation
+     * Returns a builder that lets you attach step observers.
      */
-    fun runCombined(combinedInput: String, observer: TuringMachineRunner.StepObserver? = null): TMResult {
+    fun prepareCombined(combinedInput: String): TMExecutor {
         val (tmEncoding, input) = parser.parse(combinedInput)
-        return run(tmEncoding, input, observer)
+        return prepare(tmEncoding, input)
+    }
+
+    /**
+     * Builder class for configuring and executing a TM.
+     */
+    class TMExecutor(private val runner: TuringMachineRunner) {
+        /**
+         * Attaches a step observer and returns the executor for chaining.
+         */
+        fun onStep(callback: (TuringMachineRunner.StepInfo) -> Unit): TMExecutor {
+            runner.onStep(callback)
+            return this
+        }
+
+        /**
+         * Executes the TM and returns the result.
+         */
+        fun execute(maxSteps: Int = 10000): TMResult {
+            return runner.run(maxSteps)
+        }
     }
 }

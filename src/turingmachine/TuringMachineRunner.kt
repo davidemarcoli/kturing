@@ -1,7 +1,7 @@
 package turingmachine
 
 /**
- * Runner for Turing machine execution with detailed tracking.
+ * Runner for Turing machine execution with functional step tracking.
  */
 class TuringMachineRunner(private val tm: TuringMachine) {
     private var currentState: State = tm.startState
@@ -9,34 +9,54 @@ class TuringMachineRunner(private val tm: TuringMachine) {
     private var steps = 0
 
     /**
-     * Observer interface for tracking the execution of a Turing machine.
+     * Data class representing the state of a Turing machine at a given step.
      */
-    interface StepObserver {
-        fun onStep(state: State, tape: Tape, stepCount: Int)
-    }
+    data class StepInfo(
+        val state: State,
+        val tape: Tape,
+        val stepCount: Int,
+        val headPosition: Int
+    )
 
-    private var observer: StepObserver? = null
+    private var stepCallback: ((StepInfo) -> Unit)? = null
 
     /**
-     * Sets an observer to receive step-by-step execution updates.
+     * Initializes the Turing machine with the given input string.
      */
-    fun setObserver(observer: StepObserver?) {
-        this.observer = observer
-    }
-
-    fun initialize(input: String) {
+    fun initialize(input: String): TuringMachineRunner {
         currentState = tm.startState
         tape.initialize(input)
         steps = 0
 
-        // Notify observer of initial state
-        observer?.onStep(currentState, tape, steps)
+        // Notify of initial state
+        notifyStep()
+
+        return this
+    }
+
+    /**
+     * Sets a callback function to be called at each step.
+     */
+    fun onStep(callback: (StepInfo) -> Unit): TuringMachineRunner {
+        stepCallback = callback
+        // Notify with current state since we may have already initialized
+        notifyStep()
+        return this
+    }
+
+    private fun notifyStep() {
+        stepCallback?.invoke(
+            StepInfo(
+                state = currentState,
+                tape = tape,
+                stepCount = steps,
+                headPosition = tape.getPosition()
+            )
+        )
     }
 
     /**
      * Performs a single step of execution.
-     *
-     * @return true if the machine can continue, false if it has halted
      */
     fun step(): Boolean {
         if (tm.isHaltingState(currentState)) return false
@@ -57,17 +77,15 @@ class TuringMachineRunner(private val tm: TuringMachine) {
 
         steps++
 
-        // Notify observer of the step
-        observer?.onStep(currentState, tape, steps)
+        // Notify of step completion
+        notifyStep()
 
         return !tm.isHaltingState(currentState)
     }
 
     /**
      * Runs the Turing machine until it halts or reaches the maximum steps.
-     *
-     * @param maxSteps Maximum number of steps to run (default 10000)
-     * @return A TMResult containing the execution result
+     * Returns a result object with execution details.
      */
     fun run(maxSteps: Int = 10000): TMResult {
         while (step() && steps < maxSteps) {
