@@ -8,15 +8,13 @@ package turingmachine
 class Tape(private val blankSymbol: Char) {
     private val leftTape = mutableListOf<Char>()
     private val rightTape = mutableListOf<Char>()
+    private var position = 0  // Track absolute position
 
-    /**
-     * Initializes the tape with the given input string.
-     *
-     * @param input The input string to initialize the tape.
-     */
     fun initialize(input: String) {
         leftTape.clear()
         rightTape.clear()
+        position = 0
+
         if (input.isEmpty()) {
             rightTape.add(blankSymbol)
         } else {
@@ -24,64 +22,64 @@ class Tape(private val blankSymbol: Char) {
         }
     }
 
-    /**
-     * Returns the current symbol under the tape head.
-     *
-     * @return The symbol under the tape head.
-     */
     fun read(): Char {
-        if (rightTape.isEmpty()) {
-            rightTape.add(blankSymbol)
-        }
+        ensureReadable()
         return rightTape.first()
     }
 
-    /**
-     * Writes a symbol at the current tape head position.
-     *
-     * @param symbol The symbol to write.
-     */
     fun write(symbol: Char) {
-        if (rightTape.isEmpty()) {
-            rightTape.add(symbol)
-        } else {
-            rightTape[0] = symbol
-        }
+        ensureReadable()
+        rightTape[0] = symbol
     }
 
-    /**
-     * Moves the tape head to the left.
-     */
     fun moveLeft() {
         if (leftTape.isEmpty()) {
             leftTape.add(blankSymbol)
         }
         rightTape.add(0, leftTape.removeAt(leftTape.lastIndex))
+        position--
     }
 
-    /**
-     * Moves the tape head to the right.
-     */
     fun moveRight() {
+        ensureReadable()
         if (rightTape.size <= 1) {
             rightTape.add(blankSymbol)
         }
         leftTape.add(rightTape.removeAt(0))
+        position++
+    }
+
+    private fun ensureReadable() {
+        if (rightTape.isEmpty()) {
+            rightTape.add(blankSymbol)
+        }
+    }
+
+    fun getPosition(): Int = position
+
+    /**
+     * Returns a view of the tape with specified context around the head.
+     */
+    fun getView(context: Int): String {
+        val sb = StringBuilder()
+
+        // Add left context
+        val leftContext = leftTape.takeLast(context)
+        repeat(context - leftContext.size) { sb.append(blankSymbol) }
+        leftContext.forEach { sb.append(it) }
+
+        // Add head position with brackets
+        sb.append("[${read()}]")
+
+        // Add right context
+        val rightContext = rightTape.drop(1).take(context)
+        rightContext.forEach { sb.append(it) }
+        repeat(context - rightContext.size) { sb.append(blankSymbol) }
+
+        return sb.toString()
     }
 
     override fun toString(): String {
-        val sb = StringBuilder()
-
-        for (i in leftTape.lastIndex downTo 0) {
-            sb.append(leftTape[i])
-        }
-
-        sb.append("[${if (rightTape.isNotEmpty()) rightTape[0] else blankSymbol}]")
-
-        for (i in 1..<rightTape.size) {
-            sb.append(rightTape[i])
-        }
-
-        return sb.toString()
+        return getView(50)  // Default view size
     }
 }
