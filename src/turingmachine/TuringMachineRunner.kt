@@ -98,6 +98,7 @@ class TuringMachineRunner(private val tm: TuringMachine) {
             accepted = accepted,
             finalState = currentState,
             steps = steps,
+            result = tape.getContent(),
             tapeContent = tape.toString(),
             headPosition = tape.getPosition()
         )

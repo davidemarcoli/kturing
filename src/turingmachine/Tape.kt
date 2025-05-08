@@ -79,6 +79,10 @@ class Tape(private val blankSymbol: Char) {
         return sb.toString()
     }
 
+    fun getContent(): String {
+        return (leftTape.reversed().joinToString("") + read() + rightTape.drop(1).joinToString("")).trim(blankSymbol)
+    }
+
     override fun toString(): String {
         return getView(50)  // Default view size
     }

@@ -13,6 +13,7 @@ data class TMResult(
     val accepted: Boolean,
     val finalState: State,
     val steps: Int,
+    val result: String,
     val tapeContent: String,
     val headPosition: Int
 )
