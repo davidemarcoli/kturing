@@ -18,19 +18,17 @@ class TuringMachine(
     val transitions: Set<Transition>,
     val startState: State,
     val acceptState: State,
-//    val rejectState: State = State.REJECT,
     val blankSymbol: Char = '_'
 ) {
     init {
-        require(blankSymbol in tapeAlphabet) { "Blank-Symbol muss im Band-Alphabet enthalten sein" }
-        require(inputAlphabet.all { it in tapeAlphabet }) { "Eingabe-Alphabet muss Teilmenge des Band-Alphabets sein" }
-        require(startState in states) { "Startzustand muss in den Zuständen enthalten sein" }
-        require(acceptState in states) { "Akzeptierender Zustand muss in den Zuständen enthalten sein" }
-        require(transitions.all { it.currentState in states }) { "Alle Zustände der Übergänge müssen in den Zuständen enthalten sein" }
-        require(transitions.all { it.nextState in states }) { "Alle Folgezustände der Übergänge müssen in den Zuständen enthalten sein" }
-        require(startState in states) { "Startzustand muss in den Zuständen enthalten sein" }
-        require(acceptState in states) { "Akzeptierender Zustand muss in den Zuständen enthalten sein" }
-//        require(rejectState in states) { "Ablehnender Zustand muss in den Zuständen enthalten sein" }
+        require(blankSymbol in tapeAlphabet) { "Blank symbol must be included in the tape alphabet" }
+        require(inputAlphabet.all { it in tapeAlphabet }) { "Input alphabet must be a subset of the tape alphabet" }
+        require(startState in states) { "Start state must be included in the set of states" }
+        require(acceptState in states) { "Accept state must be included in the set of states" }
+        require(transitions.all { it.currentState in states }) { "All transition states must be included in the set of states" }
+        require(transitions.all { it.nextState in states }) { "All next states of transitions must be included in the set of states" }
+        require(startState in states) { "Start state must be included in the set of states" }
+        require(acceptState in states) { "Accept state must be included in the set of states" }
     }
 
     private val transitionTable: Map<Pair<State, Char>, Transition> by lazy {
@@ -46,16 +44,6 @@ class TuringMachine(
      */
     fun getTransition(state: State, symbol: Char): Transition? {
         return transitionTable[Pair(state, symbol)]
-    }
-
-    /**
-     * Returns if the given state is a halting state.
-     *
-     * @param state The state to check.
-     * @return True if the state is a halting state, false otherwise.
-     */
-    fun isHaltingState(state: State): Boolean {
-        return state == acceptState /*|| state == rejectState*/
     }
 
     /**
