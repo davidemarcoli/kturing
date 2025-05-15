@@ -16,14 +16,18 @@ class TuringMachine(
     val inputAlphabet: Set<Char>,
     val tapeAlphabet: Set<Char>,
     val transitions: Set<Transition>,
-    val startState: State = State.START,
-    val acceptState: State = State.ACCEPT,
+    val startState: State,
+    val acceptState: State,
 //    val rejectState: State = State.REJECT,
     val blankSymbol: Char = '_'
 ) {
     init {
         require(blankSymbol in tapeAlphabet) { "Blank-Symbol muss im Band-Alphabet enthalten sein" }
         require(inputAlphabet.all { it in tapeAlphabet }) { "Eingabe-Alphabet muss Teilmenge des Band-Alphabets sein" }
+        require(startState in states) { "Startzustand muss in den Zuständen enthalten sein" }
+        require(acceptState in states) { "Akzeptierender Zustand muss in den Zuständen enthalten sein" }
+        require(transitions.all { it.currentState in states }) { "Alle Zustände der Übergänge müssen in den Zuständen enthalten sein" }
+        require(transitions.all { it.nextState in states }) { "Alle Folgezustände der Übergänge müssen in den Zuständen enthalten sein" }
         require(startState in states) { "Startzustand muss in den Zuständen enthalten sein" }
         require(acceptState in states) { "Akzeptierender Zustand muss in den Zuständen enthalten sein" }
 //        require(rejectState in states) { "Ablehnender Zustand muss in den Zuständen enthalten sein" }

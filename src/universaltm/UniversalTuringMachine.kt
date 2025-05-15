@@ -56,7 +56,7 @@ class UniversalTuringMachine {
         /**
          * Executes the TM and returns the result.
          */
-        fun execute(maxSteps: Int = 10000): TMResult {
+        fun execute(maxSteps: Long = Long.MAX_VALUE): TMResult {
             return runner.run(maxSteps)
         }
     }

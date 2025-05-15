@@ -14,6 +14,10 @@ class GodelEncoder(private val tm: TuringMachine) {
         }
     }
 
+    private val hasIdZero by lazy {
+        tm.states.find { state -> state.id == 0 } != null
+    }
+
     private fun getSymbolId(symbol: Char): Int {
         return symbolMap[symbol] ?: throw IllegalArgumentException("Symbol '$symbol' ist nicht im Alphabet")
     }
@@ -25,9 +29,11 @@ class GodelEncoder(private val tm: TuringMachine) {
      * @return The encoded transition as a string.
      */
     fun encodeTransition(transition: Transition): String {
-        val i = transition.currentState.id
+        val idAdjustment = if (hasIdZero) 1 else 0
+
+        val i = transition.currentState.id + idAdjustment
         val j = getSymbolId(transition.currentSymbol)
-        val k = transition.nextState.id
+        val k = transition.nextState.id + idAdjustment
         val l = getSymbolId(transition.writeSymbol)
         val m = if (transition.direction == Direction.LEFT) 1 else 2
 

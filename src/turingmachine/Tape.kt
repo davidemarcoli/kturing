@@ -80,7 +80,7 @@ class Tape(private val blankSymbol: Char) {
     }
 
     fun getContent(): String {
-        return (leftTape.reversed().joinToString("") + read() + rightTape.drop(1).joinToString("")).trim(blankSymbol)
+        return (leftTape.joinToString("") + read() + rightTape.drop(1).joinToString("")).trim(blankSymbol)
     }
 
     override fun toString(): String {

@@ -15,7 +15,7 @@ class TuringMachineDecoder {
     fun decode(binaryEncoding: String): TuringMachine {
         val transitions = parseTransitions(binaryEncoding)
 
-        val states = collectStates(transitions)
+        val states = collectStates(transitions).sortedBy { it.id }.toSet()
         val tapeSymbols = collectSymbols(transitions)
 
         // Input alphabet is all tape symbols except blank
@@ -26,18 +26,14 @@ class TuringMachineDecoder {
             inputAlphabet = inputAlphabet,
             tapeAlphabet = tapeSymbols,
             transitions = transitions.toSet(),
-            startState = State.START,
-            acceptState = State.ACCEPT,
+            startState = states.elementAt(0),
+            acceptState = states.elementAt(1),
             blankSymbol = '_'
         )
     }
 
     private fun collectStates(transitions: List<Transition>): Set<State> {
         val states = mutableSetOf<State>()
-
-        // Always include start and accept states
-        states.add(State.START)
-        states.add(State.ACCEPT)
 
         // Add states from transitions
         for (transition in transitions) {
@@ -103,9 +99,7 @@ class TuringMachineDecoder {
 
     private fun mapToState(stateCode: Int): State {
         return when (stateCode) {
-            1 -> State.START  // q1 is the start state
-            2 -> State.ACCEPT // q2 is the accept state
-            else -> State(stateCode) // q3, q4, etc.
+            else -> State(stateCode)
         }
     }
 

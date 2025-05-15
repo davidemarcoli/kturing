@@ -6,7 +6,7 @@ package turingmachine
 class TuringMachineRunner(private val tm: TuringMachine) {
     private var currentState: State = tm.startState
     private val tape = Tape(tm.blankSymbol)
-    private var steps = 0
+    private var steps = 0L
 
     /**
      * Data class representing the state of a Turing machine at a given step.
@@ -14,7 +14,7 @@ class TuringMachineRunner(private val tm: TuringMachine) {
     data class StepInfo(
         val state: State,
         val tape: Tape,
-        val stepCount: Int,
+        val stepCount: Long,
         val headPosition: Int
     )
 
@@ -59,8 +59,6 @@ class TuringMachineRunner(private val tm: TuringMachine) {
      * Performs a single step of execution.
      */
     fun step(): Boolean {
-        if (tm.isHaltingState(currentState)) return false
-
         val symbol = tape.read()
         val transition = tm.getTransition(currentState, symbol)
 
@@ -71,6 +69,7 @@ class TuringMachineRunner(private val tm: TuringMachine) {
             when (transition.direction) {
                 Direction.LEFT -> tape.moveLeft()
                 Direction.RIGHT -> tape.moveRight()
+                Direction.NONE -> { /* Do nothing */ }
             }
             currentState = transition.nextState
         }
@@ -80,14 +79,14 @@ class TuringMachineRunner(private val tm: TuringMachine) {
         // Notify of step completion
         notifyStep()
 
-        return !tm.isHaltingState(currentState)
+        return true
     }
 
     /**
      * Runs the Turing machine until it halts or reaches the maximum steps.
      * Returns a result object with execution details.
      */
-    fun run(maxSteps: Int = 10000): TMResult {
+    fun run(maxSteps: Long = Long.MAX_VALUE): TMResult {
         while (step() && steps < maxSteps) {
             // Step until halted or max steps reached
         }
@@ -107,5 +106,5 @@ class TuringMachineRunner(private val tm: TuringMachine) {
     // Getter methods
     fun getCurrentState(): State = currentState
     fun getTape(): Tape = tape
-    fun getStepCount(): Int = steps
+    fun getStepCount(): Long = steps
 }
